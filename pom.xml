@@ -80,17 +80,19 @@
 	</dependencies>
 
 	<build>
-		<plugins>
-			<!-- Spring Boot Maven Plugin -->
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-				<configuration>
-					<mainClass>com.example.airline.AirlineManagementSystemApplication</mainClass>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+    <finalName>airline-management-service</finalName> <!-- Clean, consistent JAR name -->
+    <plugins>
+        <!-- Spring Boot Maven Plugin -->
+        <plugin>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <configuration>
+                <mainClass>com.example.airline.AirlineManagementSystemApplication</mainClass>
+            </configuration>
+        </plugin>
+    </plugins>
+</build>
+
 
 	<repositories>
 		<repository>
