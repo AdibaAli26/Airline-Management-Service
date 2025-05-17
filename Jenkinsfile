@@ -1,11 +1,11 @@
 pipeline {
-    agent any  // Run on a node/agent with Docker & Maven installed
+    agent any
 
     environment {
-        JAR_NAME = 'target/airline-management-service.jar'
+        IMAGE_NAME = 'your-dockerhub-username/airline-management-service:latest'
         EC2_USER = 'ubuntu'
         EC2_HOST = '13.203.221.108'
-        EC2_KEY = credentials('ec2-ssh-key') // ensure this matches the ID in sshagent below
+        EC2_KEY = credentials('ec2-ssh-key')
     }
 
     stages {
@@ -24,16 +24,32 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                sh 'docker build -t airline-management-service .'
+                sh 'docker build -t $IMAGE_NAME .'
             }
         }
 
-        stage('Deploy to EC2') {
+        stage('Docker Push') {
+            steps {
+               withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+    sh '''
+        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+        docker push $IMAGE_NAME
+    '''
+}
+
+            }
+        }
+
+        stage('Deploy on EC2') {
             steps {
                 sshagent(['ec2-ssh-key']) {
                     sh """
-                        scp -o StrictHostKeyChecking=no ${JAR_NAME} ${EC2_USER}@${EC2_HOST}:/home/${EC2_USER}/app.jar
-                        ssh -o StrictHostKeyChecking=no ${EC2_USER}@${EC2_HOST} 'nohup java -jar /home/${EC2_USER}/app.jar > output.log 2>&1 &'
+                        ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_HOST '
+                            docker stop airline-app || true &&
+                            docker rm airline-app || true &&
+                            docker pull $IMAGE_NAME &&
+                            docker run -d -p 8080:8080 --name airline-app $IMAGE_NAME
+                        '
                     """
                 }
             }
