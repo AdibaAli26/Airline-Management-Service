@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = 'your-dockerhub-username/airline-management-service:latest'
+        IMAGE_NAME = 'Adiba2604/airline-management-service:latest'
         EC2_USER = 'ubuntu'
         EC2_HOST = '13.203.221.108'
         EC2_KEY = credentials('ec2-ssh-key')
